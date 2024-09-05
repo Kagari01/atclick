@@ -10,7 +10,7 @@ local RunService = game:GetService("RunService")
 --Vars--
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-local flags = {Auto_Clicking = false, Mouse_Locked = false}
+local flags = {Auto_Clicking = true, Mouse_Locked = true}
 local TaskWait = task.wait
 
 --Get Keybind--
