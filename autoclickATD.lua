@@ -1,15 +1,22 @@
 --Already Running--
 if getgenv()["Already Running"] then return else getgenv()["Already Running"] = true end
+
 --Services--
 local UIS = game:GetService("UserInputService")
 local VIM = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+
 --Vars--
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-local flags = {Auto_Clicking = true, Mouse_Locked = false} -- Always enable Auto Clicking
+local flags = {Auto_Clicking = true, Mouse_Locked = true}
 local TaskWait = task.wait
+
+-- Pre-defined Mouse Lock Positions (Replace these with your own positions)
+local Mouse_Locked_Position1 = Vector2.new(429.973969, 303.925781)  -- Thay đổi giá trị này theo vị trí mong muốn
+local Mouse_Locked_Position2 = Vector2.new(223.802078, 276.723633)  -- Thay đổi giá trị này theo vị trí mong muốn
+local Current_Mouse_Locked_Position = Mouse_Locked_Position1
 
 --Get Keybind--
 local getKeycode = function(bind)
@@ -33,30 +40,32 @@ local Text = Draw("Text", {
     Outline = true,
     OutlineColor = Color3.fromRGB(255, 255, 255),
     Color = Color3.fromRGB(0, 0, 0),
-    Text = "Auto Clicking : TRUE\nMouse Locked : TRUE",
+    Text = "Auto Clicking : FALSE\nMouse Locked : FALSE",
     Visible = true,
 })
 
--- Key Bind --
+--Key Bind--
 UIS.InputBegan:Connect(function(inputObj, GPE)
     if (not GPE) then
+        if (inputObj.KeyCode == getKeycode(Settings["Auto Click Keybind"])) then
+            flags.Auto_Clicking = not flags.Auto_Clicking
+        end
+        
         if (inputObj.KeyCode == getKeycode(Settings["Lock Mouse Position Keybind"])) then
             flags.Mouse_Locked = not flags.Mouse_Locked
+            Current_Mouse_Locked_Position = (Current_Mouse_Locked_Position == Mouse_Locked_Position1) and Mouse_Locked_Position2 or Mouse_Locked_Position1
         end
 
-        Text.Text = ("Auto Clicking : %s\nMouse Locked : %s"):format(tostring(flags.Auto_Clicking):upper(), tostring(flags.Mouse_Locked):upper())
+        Text.Text = ("Auto Clicking : %s\nMouse Locked Position 1: %s\nMouse Locked Position 2: %s\nMouse Locked : %s"):format(
+            tostring(flags.Auto_Clicking):upper(),
+            tostring(Mouse_Locked_Position1),
+            tostring(Mouse_Locked_Position2),
+            tostring(flags.Mouse_Locked):upper()
+        )
     end
 end)
 
--- Mouse Lock Positions --
-local lockPositions = {
-    Vector2.new(429.973969, 303.925781),
-    Vector2.new(223.802078, 276.723633)
-}
-
--- Auto Click --
-local currentLockPositionIndex = 1
-
+--Auto Click--
 while (true) do
     Text.Visible = Settings.GUI
     Text.Position = Vector2.new(Camera.ViewportSize.X - 133, Camera.ViewportSize.Y - 48)
@@ -64,18 +73,12 @@ while (true) do
     if (flags.Auto_Clicking) then
         for i = 1, 2 do
             if (flags.Mouse_Locked) then
-                local lockPosition = lockPositions[currentLockPositionIndex]
-                VIM:SendMouseButtonEvent(lockPosition.X, lockPosition.Y, Settings["Right Click"] and 1 or 0, i == 1, nil, 0)
+                VIM:SendMouseButtonEvent(Current_Mouse_Locked_Position.X, Current_Mouse_Locked_Position.Y, Settings["Right Click"] and 1 or 0, i == 1, nil, 0)
             else
                 local Mouse = UIS:GetMouseLocation()
                 VIM:SendMouseButtonEvent(Mouse.X, Mouse.Y, Settings["Right Click"] and 1 or 0, i == 1, nil, 0)
             end
         end
-    end
-
-    -- Switch mouse lock position every 0.5 seconds
-    if (flags.Mouse_Locked) then
-        currentLockPositionIndex = (currentLockPositionIndex % #lockPositions) + 1
     end
 
     if (Settings.Delay <= 0) then
