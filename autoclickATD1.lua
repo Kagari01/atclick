@@ -1,59 +1,43 @@
--- Đã chạy
+--Already Running--
 if getgenv()["Already Running"] then return else getgenv()["Already Running"] = true end
 
--- Dịch vụ
+--Services--
 local UIS = game:GetService("UserInputService")
 local VIM = game:GetService("VirtualInputManager")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
--- Biến
+--Vars--
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 local flags = {Auto_Clicking = false, Mouse_Locked = false}
 local TaskWait = task.wait
 
--- Lấy Keybind
+--Get Keybind--
 local getKeycode = function(bind)
     return (pcall(function() return Enum.KeyCode[bind] end) and Enum.KeyCode[bind] or bind)
 end
 
--- Vẽ
+--Draw--
 local Draw = function(obj, props)
     local NewObj = Drawing.new(obj)
-
     for i, v in next, props do
         NewObj[i] = v
     end
-
     return NewObj
 end
 
--- Tạo GUI
+--Create GUI--
 local Text = Draw("Text", {
     Size = 18,
     Outline = true,
     OutlineColor = Color3.fromRGB(255, 255, 255),
     Color = Color3.fromRGB(0, 0, 0),
-    Text = "Auto Clicking : TRUE\nMouse Locked : TRUE",
+    Text = "Auto Clicking : FALSE\nMouse Locked : FALSE",
     Visible = true,
 })
 
--- Vị trí khóa chuột
-local mouseLockPositions = {
-    Vector2.new(429.973969, 303.925781),
-    Vector2.new(223.802078, 276.723633)
-}
-
-local currentMouseLockIndex = 1
-
--- Hàm để chuyển đổi vị trí khóa chuột
-local function switchMouseLockPosition()
-    currentMouseLockIndex = (currentMouseLockIndex % #mouseLockPositions) + 1
-    flags.Mouse_Locked_Position = mouseLockPositions[currentMouseLockIndex]
-end
-
--- Key Bind
+--Key Bind--
 UIS.InputBegan:Connect(function(inputObj, GPE)
     if (not GPE) then
         if (inputObj.KeyCode == getKeycode(Settings["Auto Click Keybind"])) then
@@ -61,7 +45,8 @@ UIS.InputBegan:Connect(function(inputObj, GPE)
         end
         
         if (inputObj.KeyCode == getKeycode(Settings["Lock Mouse Position Keybind"])) then
-            switchMouseLockPosition()
+            -- Đặt tọa độ khóa chuột tại vị trí mới
+            flags.Mouse_Locked_Position = Vector2.new(429.973969, 303.925781)
             flags.Mouse_Locked = not flags.Mouse_Locked
         end
 
@@ -69,7 +54,7 @@ UIS.InputBegan:Connect(function(inputObj, GPE)
     end
 end)
 
--- Auto Click
+--Auto Click--
 while (true) do
     Text.Visible = Settings.GUI
     Text.Position = Vector2.new(Camera.ViewportSize.X - 133, Camera.ViewportSize.Y - 48)
